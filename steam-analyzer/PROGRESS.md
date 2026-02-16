@@ -2,24 +2,24 @@
 implementation
 
 ## Current Task
-Phase 1: 基盤 — 完了
+Phase 2: API層 — 完了
 
 ## TDD Phase
 completed
 
 ## What was just done
-- プロジェクト初期セットアップ（package.json, ディレクトリ構造, Jest）
-- データモデル定義（models.js: createGame, createAppError, createFetchResult）
-- engine/tag-manager.js 実装（aggregateTags, calculateTagRarity） — テスト9件
-- engine/aggregator.js 実装（mergeGamePair, mergeGames） — テスト9件
-- main/store.js 実装（library, tagProfile, settings, watchlist CRUD） — テスト8件
+- Phase 1 完了（models.js, tag-manager.js, aggregator.js, store.js）
+- api/steam.js 実装（fetchOwnedGames, fetchAppDetails, filterGamesOnly） — テスト10件
+- api/itad.js 実装（fetchCurrentPrice, fetchPriceHistory） — テスト6件
+- api/hltb.js 実装（fetchHltb） — テスト4件
+- 全API: 正常レスポンス・HTTPエラー・ネットワークエラーのパターンをカバー
+- 全API: 外部エラーを AppError に変換
 
 ## What to do next
-1. Phase 2: API層 — steam.js（Steam API通信、ライブラリ取得、タイプフィルタ）
-2. Phase 2: API層 — itad.js（ITAD API通信、価格・セール履歴取得）
-3. Phase 2: API層 — hltb.js（HLTB通信、クリア時間取得）
-4. Phase 3: キャッシュ・エラー — cache-manager.js
-5. Phase 4: 分析エンジン — scorer.js, sale-predictor.js 等
+1. Phase 3: キャッシュ・エラー — cache-manager.js（TTL管理、SWR、リトライ）
+2. Phase 4: 分析エンジン — scorer.js（タグプロファイル、レコメンドスコアリング）
+3. Phase 4: 分析エンジン — sale-predictor.js, backlog-analyzer.js
+4. Phase 4: 分析エンジン — cost-analyzer.js, purchase-advisor.js
 
 ## Unresolved issues
 なし
@@ -29,9 +29,9 @@ completed
 - [x] src/engine/tag-manager.js（タグ集計、TF-IDF）
 - [x] src/engine/aggregator.js（マルチソースマージ）
 - [x] src/main/store.js（永続化）
-- [ ] src/api/steam.js
-- [ ] src/api/itad.js
-- [ ] src/api/hltb.js
+- [x] src/api/steam.js（所持ゲーム取得、詳細取得、タイプフィルタ）
+- [x] src/api/itad.js（現在価格、セール履歴）
+- [x] src/api/hltb.js（クリア時間）
 - [ ] src/main/cache-manager.js
 - [ ] src/engine/scorer.js
 - [ ] src/engine/sale-predictor.js
