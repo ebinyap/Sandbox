@@ -40,16 +40,6 @@
   <script src="./tabs/settings.js"></script>
   <script src="./components/price-bar.js"></script>
   <script src="./components/game-card.js"></script>
-  <script>
-    // Tab switching
-    document.querySelectorAll('#tab-nav button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('#tab-nav button').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-      });
-    });
-  </script>
+  <script src="./nav.js"></script>
 </body>
 </html>
