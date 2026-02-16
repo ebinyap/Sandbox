@@ -8,7 +8,7 @@
   const panel = document.getElementById('tab-settings');
   if (!panel) return;
 
-  async function render() {
+  function renderForm() {
     panel.innerHTML = `
       <h2 style="margin-bottom:12px;">Settings</h2>
       <div style="display:grid;gap:12px;max-width:500px;">
@@ -28,10 +28,64 @@
           <input id="setting-activity" type="checkbox">
           <span style="color:#8f98a0;font-size:13px;">Activity monitoring enabled</span>
         </label>
-        <button id="setting-save" style="padding:8px 16px;background:#1a9fff;border:none;color:#fff;border-radius:4px;cursor:pointer;">Save</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="setting-save" style="padding:8px 16px;background:#1a9fff;border:none;color:#fff;border-radius:4px;cursor:pointer;">Save</button>
+          <span id="setting-status" style="font-size:12px;color:#a4d007;display:none;"></span>
+        </div>
       </div>
     `;
+
+    panel.querySelector('#setting-save')?.addEventListener('click', save);
   }
 
-  render();
+  async function loadSettings() {
+    renderForm();
+    try {
+      const keys = ['steamApiKey', 'steamId', 'itadApiKey', 'activityMonitorEnabled'];
+      for (const key of keys) {
+        const result = await window.api?.getSettings(key, '');
+        if (result?.success) {
+          const el = panel.querySelector({
+            steamApiKey: '#setting-steam-key',
+            steamId: '#setting-steam-id',
+            itadApiKey: '#setting-itad-key',
+            activityMonitorEnabled: '#setting-activity',
+          }[key]);
+          if (el) {
+            if (el.type === 'checkbox') {
+              el.checked = !!result.data;
+            } else {
+              el.value = result.data || '';
+            }
+          }
+        }
+      }
+    } catch (err) {
+      // Settings load failure is non-fatal
+    }
+  }
+
+  async function save() {
+    const status = panel.querySelector('#setting-status');
+    try {
+      await window.api?.setSettings('steamApiKey', panel.querySelector('#setting-steam-key')?.value || '');
+      await window.api?.setSettings('steamId', panel.querySelector('#setting-steam-id')?.value || '');
+      await window.api?.setSettings('itadApiKey', panel.querySelector('#setting-itad-key')?.value || '');
+      await window.api?.setSettings('activityMonitorEnabled', panel.querySelector('#setting-activity')?.checked || false);
+
+      if (status) {
+        status.textContent = 'Saved!';
+        status.style.display = 'inline';
+        setTimeout(() => { status.style.display = 'none'; }, 2000);
+      }
+    } catch (err) {
+      if (status) {
+        status.textContent = 'Save failed: ' + err.message;
+        status.style.color = '#e0a0a0';
+        status.style.display = 'inline';
+      }
+    }
+  }
+
+  loadSettings();
 })();
