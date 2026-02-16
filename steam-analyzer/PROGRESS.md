@@ -2,26 +2,21 @@
 implementation
 
 ## Current Task
-Phase 4: 分析エンジン — 完了
+Phase 5: アクティビティ — 完了
 
 ## TDD Phase
 completed
 
 ## What was just done
-- Phase 1 完了（models.js, tag-manager.js, aggregator.js, store.js）
-- Phase 2 完了（steam.js, itad.js, hltb.js）
-- Phase 3 完了（cache-manager.js — TTL管理、SWR、invalidate/clear）
-- Phase 4 完了:
-  - scorer.js（calculateTagProfile, scoreCandidate, rankCandidates, scoreSimilarCandidate） — 14テスト
-  - backlog-analyzer.js（classifyStatus, calculateRescuePriority, analyzeBacklog） — 14テスト
-  - sale-predictor.js（predictSale — 周期分析、確度判定） — 6テスト
-  - cost-analyzer.js（calculateCostPerHour, rankByCostEfficiency） — 6テスト
-  - purchase-advisor.js（advise — buy_now/wait/expensive/unknown 判定） — 5テスト
-- **全12スイート、101テスト合格**
+- Phase 1-4 完了（基盤、API層、キャッシュ、全分析エンジン）
+- Phase 5 完了:
+  - activity-analyzer.js（buildMonthlySummary, buildQuarterlySummary, buildYearlySummary） — 6テスト
+  - activity-monitor.js（プロセス監視、セッション管理、起動/終了検知） — 5テスト
+- **全14スイート、112テスト合格**
 
 ## What to do next
-1. Phase 5: アクティビティ — activity-monitor.js, activity-analyzer.js
-2. Phase 6: Electron・UI — ipc-handlers.js, notifier.js, tray.js, renderer/
+1. Phase 6: Electron・UI — ipc-handlers.js, notifier.js, tray.js
+2. Phase 6: renderer/ — UI（tabs, components）
 3. Phase 7: 統合・仕上げ
 
 ## Unresolved issues
@@ -41,9 +36,9 @@ completed
 - [x] src/engine/backlog-analyzer.js（積みゲー分析）
 - [x] src/engine/cost-analyzer.js（コスパ分析）
 - [x] src/engine/purchase-advisor.js（購入タイミング判定）
-- [ ] src/engine/activity-analyzer.js
+- [x] src/engine/activity-analyzer.js（月別/四半期/年別集計）
+- [x] src/main/activity-monitor.js（プロセス監視）
 - [ ] src/main/ipc-handlers.js
 - [ ] src/main/notifier.js
 - [ ] src/main/tray.js
-- [ ] src/main/activity-monitor.js
 - [ ] src/renderer/
