@@ -37,10 +37,13 @@
     return '$' + value.toFixed(2);
   }
 
-  function renderData(stats) {
+  function renderData(stats, activity) {
     const topCost = stats.costRanking
       .filter((e) => e.costPerHour != null && isFinite(e.costPerHour) && e.costPerHour > 0)
       .slice(0, 5);
+
+    const yearlyEntries = activity ? Object.entries(activity.yearly).sort(([a], [b]) => b.localeCompare(a)) : [];
+    const monthlyEntries = activity ? Object.entries(activity.monthly).sort(([a], [b]) => b.localeCompare(a)).slice(0, 6) : [];
 
     panel.innerHTML = `
       <h2 style="margin-bottom:12px;">Statistics</h2>
@@ -64,7 +67,7 @@
       </div>
       ${topCost.length > 0 ? `
       <h3 style="margin-bottom:8px;color:#8f98a0;">Best Value Games</h3>
-      <div style="display:grid;gap:6px;">
+      <div style="display:grid;gap:6px;margin-bottom:16px;">
         ${topCost.map((e) => `
           <div style="background:#2a475e;border-radius:4px;padding:8px 12px;display:flex;justify-content:space-between;">
             <span>${e.game.title || e.game.id}</span>
@@ -72,18 +75,50 @@
           </div>
         `).join('')}
       </div>` : ''}
+      ${yearlyEntries.length > 0 ? `
+      <h3 style="margin-bottom:8px;color:#8f98a0;">Activity by Year</h3>
+      <div style="display:grid;gap:6px;margin-bottom:16px;">
+        ${yearlyEntries.map(([year, data]) => `
+          <div style="background:#2a475e;border-radius:4px;padding:8px 12px;display:flex;justify-content:space-between;">
+            <span>${year}</span>
+            <span style="color:#66c0f4;">${formatHours(data.totalMinutes)} | ${data.sessionCount} sessions</span>
+          </div>
+        `).join('')}
+      </div>` : ''}
+      ${monthlyEntries.length > 0 ? `
+      <h3 style="margin-bottom:8px;color:#8f98a0;">Recent Monthly Activity</h3>
+      <div style="display:grid;gap:6px;">
+        ${monthlyEntries.map(([month, data]) => {
+          const maxMinutes = Math.max(...monthlyEntries.map(([, d]) => d.totalMinutes), 1);
+          const barWidth = Math.round((data.totalMinutes / maxMinutes) * 100);
+          return `
+          <div style="background:#2a475e;border-radius:4px;padding:8px 12px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span>${month}</span>
+              <span style="color:#66c0f4;">${formatHours(data.totalMinutes)}</span>
+            </div>
+            <div style="background:#1b2838;border-radius:2px;height:4px;">
+              <div style="background:#66c0f4;height:100%;width:${barWidth}%;border-radius:2px;"></div>
+            </div>
+            <div style="font-size:11px;color:#8f98a0;margin-top:2px;">${data.sessionCount} sessions${data.mostPlayed ? ' | Most: ' + data.mostPlayed : ''}</div>
+          </div>`;
+        }).join('')}
+      </div>` : ''}
     `;
   }
 
   async function load() {
     renderLoading();
     try {
-      const result = await window.api?.getStatistics();
-      if (!result || !result.success) {
-        renderError(result?.error || 'Failed to load statistics');
+      const [statsResult, activityResult] = await Promise.all([
+        window.api?.getStatistics(),
+        window.api?.getActivitySummary(),
+      ]);
+      if (!statsResult || !statsResult.success) {
+        renderError(statsResult?.error || 'Failed to load statistics');
         return;
       }
-      renderData(result.data);
+      renderData(statsResult.data, activityResult?.success ? activityResult.data : null);
     } catch (err) {
       renderError(err.message);
     }

@@ -33,9 +33,81 @@
           <span id="setting-status" style="font-size:12px;color:#a4d007;display:none;"></span>
         </div>
       </div>
+      <hr style="border:none;border-top:1px solid #2a475e;margin:20px 0;">
+      <h3 style="margin-bottom:12px;color:#8f98a0;">Data Management</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button id="setting-refresh" style="padding:8px 16px;background:#2a475e;border:none;color:#c7d5e0;border-radius:4px;cursor:pointer;">Refresh Library</button>
+        <button id="setting-export" style="padding:8px 16px;background:#2a475e;border:none;color:#c7d5e0;border-radius:4px;cursor:pointer;">Export Data</button>
+        <button id="setting-clear-cache" style="padding:8px 16px;background:#4a1c1c;border:none;color:#e0a0a0;border-radius:4px;cursor:pointer;">Clear Cache</button>
+      </div>
+      <div id="data-status" style="margin-top:8px;font-size:12px;color:#8f98a0;display:none;"></div>
     `;
 
     panel.querySelector('#setting-save')?.addEventListener('click', save);
+    panel.querySelector('#setting-refresh')?.addEventListener('click', refreshLibrary);
+    panel.querySelector('#setting-export')?.addEventListener('click', exportData);
+    panel.querySelector('#setting-clear-cache')?.addEventListener('click', clearCache);
+  }
+
+  function showDataStatus(msg, isError) {
+    const el = panel.querySelector('#data-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = isError ? '#e0a0a0' : '#a4d007';
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+
+  async function refreshLibrary() {
+    const btn = panel.querySelector('#setting-refresh');
+    if (btn) btn.disabled = true;
+    showDataStatus('Refreshing library...', false);
+    try {
+      const result = await window.api?.refreshLibrary();
+      if (result?.success) {
+        const count = result.data?.games?.length || 0;
+        showDataStatus(`Library refreshed: ${count} games`, false);
+      } else {
+        showDataStatus(result?.error || 'Refresh failed', true);
+      }
+    } catch (err) {
+      showDataStatus('Refresh failed: ' + err.message, true);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function exportData() {
+    try {
+      const result = await window.api?.exportData('json');
+      if (result?.success) {
+        const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'steam-analyzer-export.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        showDataStatus('Data exported', false);
+      } else {
+        showDataStatus(result?.error || 'Export failed', true);
+      }
+    } catch (err) {
+      showDataStatus('Export failed: ' + err.message, true);
+    }
+  }
+
+  async function clearCache() {
+    try {
+      const result = await window.api?.clearCache();
+      if (result?.success) {
+        showDataStatus('Cache cleared', false);
+      } else {
+        showDataStatus(result?.error || 'Clear failed', true);
+      }
+    } catch (err) {
+      showDataStatus('Clear failed: ' + err.message, true);
+    }
   }
 
   async function loadSettings() {

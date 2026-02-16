@@ -40,6 +40,15 @@
         ${items.map(renderWatchItem).join('')}
       </div>
     `;
+    panel.querySelectorAll('.watch-remove').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const gameId = btn.dataset.gameid;
+        try {
+          await window.api?.removeWatchlistEntry(gameId);
+          load();
+        } catch (_) { /* reload anyway */ load(); }
+      });
+    });
   }
 
   function renderWatchItem(item) {
@@ -52,9 +61,12 @@
         <strong>${item.title || item.gameId || item.id}</strong>
         <div style="font-size:12px;color:#8f98a0;margin-top:2px;">Target: ${target}</div>
       </div>
-      <div style="text-align:right;">
-        <div style="font-size:16px;color:${atTarget ? '#a4d007' : '#66c0f4'};">${price}</div>
-        ${atTarget ? '<div style="font-size:11px;color:#a4d007;">Target reached!</div>' : ''}
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="text-align:right;">
+          <div style="font-size:16px;color:${atTarget ? '#a4d007' : '#66c0f4'};">${price}</div>
+          ${atTarget ? '<div style="font-size:11px;color:#a4d007;">Target reached!</div>' : ''}
+        </div>
+        <button class="watch-remove" data-gameid="${item.gameId || item.id}" style="padding:4px 8px;background:#4a1c1c;border:none;color:#e0a0a0;border-radius:4px;cursor:pointer;font-size:11px;">Remove</button>
       </div>
     </div>`;
   }
