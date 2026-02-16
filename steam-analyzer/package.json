@@ -1,0 +1,20 @@
+{
+  "name": "steam-analyzer",
+  "version": "0.1.0",
+  "description": "Steam library analyzer with recommendation engine",
+  "main": "src/main/main.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "testEnvironment": "node"
+  }
+}
