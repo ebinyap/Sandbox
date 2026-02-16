@@ -1,29 +1,33 @@
 # Current Phase
-implementation — 全モジュール実装完了
+完了 — 全モジュール実装・統合テスト・パッケージング設定完了
 
 ## Current Task
-Phase 7: renderer UI — 完了
+なし（全タスク完了）
 
 ## TDD Phase
 completed
 
 ## What was just done
-- Phase 1-6 完了（基盤、API、キャッシュ、分析エンジン、アクティビティ、Electron制御）
-- Phase 7 renderer 完了:
-  - index.html（エントリポイント、タブ切り替え、Steam風テーマ）
-  - tabs/store-recommend.js（ストア/レコメンド統合タブ）
-  - tabs/watchlist.js（ウォッチリスト）
-  - tabs/statistics.js（統計）
-  - tabs/backlog.js（積みゲー）
-  - tabs/settings.js（設定: APIキー、アクティビティ監視）
-  - components/price-bar.js（価格バー共通コンポーネント）
-  - components/game-card.js（ゲームカード共通コンポーネント）
-- **全15スイート、115テスト合格**
+- Phase 1-7 完了（基盤、API、キャッシュ、分析エンジン、アクティビティ、Electron制御、renderer UI）
+- 統合テスト追加:
+  - tests/integration/recommendation-pipeline.test.js（ライブラリ→タグプロファイル→レコメンド）
+  - tests/integration/analysis-pipeline.test.js（積みゲー→コスパ→セール予測→購入アドバイス）
+  - tests/integration/activity-pipeline.test.js（月別→四半期→年別サマリー）
+  - tests/integration/cache-api-pipeline.test.js（キャッシュ→ストア→マージ→レコメンド）
+- Electron main.js エントリポイント実装:
+  - src/main/main.js（BrowserWindow、IPC登録、トレイ常駐、アクティビティ監視）
+  - src/main/preload.js（contextBridge経由の安全なAPI公開）
+- パッケージング設定:
+  - electron-builder 設定（Win/Mac/Linux対応）
+  - npm scripts: start, pack, dist 追加
+  - dependencies: electron, electron-store, ps-list 追加
+- **全19スイート、136テスト合格**
 
 ## What to do next
-- 統合テスト（E2E）
-- Electron main.js エントリポイント統合
-- パッケージング（electron-builder）
+- assets/ にアプリアイコン（icon.png, icon.ico, icon.icns）を配置
+- `npm run pack` でパッケージングテスト
+- UX改善（ローディング状態、エラー表示の改善）
+- renderer 層の E2E テスト（Spectron 等）
 
 ## Unresolved issues
 なし
@@ -47,6 +51,9 @@ completed
 - [x] src/main/ipc-handlers.js（IPC制御）
 - [x] src/main/notifier.js（トースト通知）
 - [x] src/main/tray.js（システムトレイ）
+- [x] src/main/main.js（Electronエントリポイント）
+- [x] src/main/preload.js（contextBridge）
 - [x] src/renderer/index.html（エントリポイント）
 - [x] src/renderer/tabs/（5タブ）
 - [x] src/renderer/components/（price-bar, game-card）
+- [x] tests/integration/（4統合テストスイート）
