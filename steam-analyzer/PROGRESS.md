@@ -2,24 +2,27 @@
 implementation
 
 ## Current Task
-Phase 2: API層 — 完了
+Phase 4: 分析エンジン — 完了
 
 ## TDD Phase
 completed
 
 ## What was just done
 - Phase 1 完了（models.js, tag-manager.js, aggregator.js, store.js）
-- api/steam.js 実装（fetchOwnedGames, fetchAppDetails, filterGamesOnly） — テスト10件
-- api/itad.js 実装（fetchCurrentPrice, fetchPriceHistory） — テスト6件
-- api/hltb.js 実装（fetchHltb） — テスト4件
-- 全API: 正常レスポンス・HTTPエラー・ネットワークエラーのパターンをカバー
-- 全API: 外部エラーを AppError に変換
+- Phase 2 完了（steam.js, itad.js, hltb.js）
+- Phase 3 完了（cache-manager.js — TTL管理、SWR、invalidate/clear）
+- Phase 4 完了:
+  - scorer.js（calculateTagProfile, scoreCandidate, rankCandidates, scoreSimilarCandidate） — 14テスト
+  - backlog-analyzer.js（classifyStatus, calculateRescuePriority, analyzeBacklog） — 14テスト
+  - sale-predictor.js（predictSale — 周期分析、確度判定） — 6テスト
+  - cost-analyzer.js（calculateCostPerHour, rankByCostEfficiency） — 6テスト
+  - purchase-advisor.js（advise — buy_now/wait/expensive/unknown 判定） — 5テスト
+- **全12スイート、101テスト合格**
 
 ## What to do next
-1. Phase 3: キャッシュ・エラー — cache-manager.js（TTL管理、SWR、リトライ）
-2. Phase 4: 分析エンジン — scorer.js（タグプロファイル、レコメンドスコアリング）
-3. Phase 4: 分析エンジン — sale-predictor.js, backlog-analyzer.js
-4. Phase 4: 分析エンジン — cost-analyzer.js, purchase-advisor.js
+1. Phase 5: アクティビティ — activity-monitor.js, activity-analyzer.js
+2. Phase 6: Electron・UI — ipc-handlers.js, notifier.js, tray.js, renderer/
+3. Phase 7: 統合・仕上げ
 
 ## Unresolved issues
 なし
@@ -32,12 +35,12 @@ completed
 - [x] src/api/steam.js（所持ゲーム取得、詳細取得、タイプフィルタ）
 - [x] src/api/itad.js（現在価格、セール履歴）
 - [x] src/api/hltb.js（クリア時間）
-- [ ] src/main/cache-manager.js
-- [ ] src/engine/scorer.js
-- [ ] src/engine/sale-predictor.js
-- [ ] src/engine/backlog-analyzer.js
-- [ ] src/engine/cost-analyzer.js
-- [ ] src/engine/purchase-advisor.js
+- [x] src/main/cache-manager.js（TTL管理、SWR）
+- [x] src/engine/scorer.js（レコメンドスコアリング）
+- [x] src/engine/sale-predictor.js（セール予測）
+- [x] src/engine/backlog-analyzer.js（積みゲー分析）
+- [x] src/engine/cost-analyzer.js（コスパ分析）
+- [x] src/engine/purchase-advisor.js（購入タイミング判定）
 - [ ] src/engine/activity-analyzer.js
 - [ ] src/main/ipc-handlers.js
 - [ ] src/main/notifier.js
