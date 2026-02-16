@@ -1,23 +1,29 @@
 # Current Phase
-implementation
+implementation — 全モジュール実装完了
 
 ## Current Task
-Phase 6: Electron・UI (main層) — 完了。renderer は Phase 7 で対応。
+Phase 7: renderer UI — 完了
 
 ## TDD Phase
 completed
 
 ## What was just done
-- Phase 1-5 完了（基盤、API、キャッシュ、分析エンジン、アクティビティ）
-- Phase 6 main層 完了:
-  - ipc-handlers.js（createHandler ラッパー、registerHandlers） — 3テスト
-  - notifier.js（notify, notifySale — Electron Notification ラッパー）
-  - tray.js（createTray — システムトレイ制御）
+- Phase 1-6 完了（基盤、API、キャッシュ、分析エンジン、アクティビティ、Electron制御）
+- Phase 7 renderer 完了:
+  - index.html（エントリポイント、タブ切り替え、Steam風テーマ）
+  - tabs/store-recommend.js（ストア/レコメンド統合タブ）
+  - tabs/watchlist.js（ウォッチリスト）
+  - tabs/statistics.js（統計）
+  - tabs/backlog.js（積みゲー）
+  - tabs/settings.js（設定: APIキー、アクティビティ監視）
+  - components/price-bar.js（価格バー共通コンポーネント）
+  - components/game-card.js（ゲームカード共通コンポーネント）
 - **全15スイート、115テスト合格**
 
 ## What to do next
-1. Phase 7: renderer/ — UI実装（tabs, components）
-2. Phase 7: 統合テスト
+- 統合テスト（E2E）
+- Electron main.js エントリポイント統合
+- パッケージング（electron-builder）
 
 ## Unresolved issues
 なし
@@ -41,4 +47,6 @@ completed
 - [x] src/main/ipc-handlers.js（IPC制御）
 - [x] src/main/notifier.js（トースト通知）
 - [x] src/main/tray.js（システムトレイ）
-- [ ] src/renderer/（UI — Phase 7）
+- [x] src/renderer/index.html（エントリポイント）
+- [x] src/renderer/tabs/（5タブ）
+- [x] src/renderer/components/（price-bar, game-card）
