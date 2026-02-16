@@ -2,22 +2,22 @@
 implementation
 
 ## Current Task
-Phase 5: アクティビティ — 完了
+Phase 6: Electron・UI (main層) — 完了。renderer は Phase 7 で対応。
 
 ## TDD Phase
 completed
 
 ## What was just done
-- Phase 1-4 完了（基盤、API層、キャッシュ、全分析エンジン）
-- Phase 5 完了:
-  - activity-analyzer.js（buildMonthlySummary, buildQuarterlySummary, buildYearlySummary） — 6テスト
-  - activity-monitor.js（プロセス監視、セッション管理、起動/終了検知） — 5テスト
-- **全14スイート、112テスト合格**
+- Phase 1-5 完了（基盤、API、キャッシュ、分析エンジン、アクティビティ）
+- Phase 6 main層 完了:
+  - ipc-handlers.js（createHandler ラッパー、registerHandlers） — 3テスト
+  - notifier.js（notify, notifySale — Electron Notification ラッパー）
+  - tray.js（createTray — システムトレイ制御）
+- **全15スイート、115テスト合格**
 
 ## What to do next
-1. Phase 6: Electron・UI — ipc-handlers.js, notifier.js, tray.js
-2. Phase 6: renderer/ — UI（tabs, components）
-3. Phase 7: 統合・仕上げ
+1. Phase 7: renderer/ — UI実装（tabs, components）
+2. Phase 7: 統合テスト
 
 ## Unresolved issues
 なし
@@ -38,7 +38,7 @@ completed
 - [x] src/engine/purchase-advisor.js（購入タイミング判定）
 - [x] src/engine/activity-analyzer.js（月別/四半期/年別集計）
 - [x] src/main/activity-monitor.js（プロセス監視）
-- [ ] src/main/ipc-handlers.js
-- [ ] src/main/notifier.js
-- [ ] src/main/tray.js
-- [ ] src/renderer/
+- [x] src/main/ipc-handlers.js（IPC制御）
+- [x] src/main/notifier.js（トースト通知）
+- [x] src/main/tray.js（システムトレイ）
+- [ ] src/renderer/（UI — Phase 7）
