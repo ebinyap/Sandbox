@@ -1,12 +1,15 @@
 'use strict';
 
 const path = require('path');
-const { app, BrowserWindow, shell } = require('electron');
+const fs = require('fs');
+const { app, BrowserWindow, shell, nativeImage } = require('electron');
 const Store = require('./store');
 const CacheManager = require('./cache-manager');
 const ActivityMonitor = require('./activity-monitor');
 const { registerHandlers } = require('./ipc-handlers');
 const { createTray } = require('./tray');
+
+const isE2E = process.argv.includes('--e2e');
 
 let mainWindow = null;
 let tray = null;
@@ -26,6 +29,7 @@ function createWindow() {
     minHeight: 600,
     title: 'Steam Analyzer',
     backgroundColor: '#1b2838',
+    show: !isE2E, // E2Eではready-to-showまで非表示
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -41,15 +45,25 @@ function createWindow() {
     return { action: 'deny' };
   });
 
-  mainWindow.on('close', (e) => {
-    // トレイに最小化（閉じない）
-    e.preventDefault();
-    mainWindow.hide();
-  });
+  if (!isE2E) {
+    mainWindow.on('close', (e) => {
+      // トレイに最小化（閉じない）
+      e.preventDefault();
+      mainWindow.hide();
+    });
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  return mainWindow;
+}
+
+function getIconPath() {
+  const iconFile = path.join(__dirname, '..', '..', 'assets', 'icon.png');
+  if (fs.existsSync(iconFile)) return iconFile;
+  return null;
 }
 
 function startActivityMonitor() {
@@ -72,29 +86,34 @@ function stopActivityMonitor() {
 
 app.whenReady().then(() => {
   // IPC ハンドラー登録
-  registerHandlers({ store, cacheManager });
+  registerHandlers({ store, cacheManager, activityMonitor });
 
   // ウィンドウ作成
   createWindow();
 
-  // システムトレイ作成
-  tray = createTray({
-    iconPath: path.join(__dirname, '..', '..', 'assets', 'icon.png'),
-    onShow: () => {
-      if (mainWindow) {
-        mainWindow.show();
-        mainWindow.focus();
-      }
-    },
-    onQuit: () => {
-      stopActivityMonitor();
-      mainWindow.destroy();
-      app.quit();
-    },
-  });
+  // システムトレイ作成（E2Eモードではスキップ）
+  if (!isE2E) {
+    const iconPath = getIconPath();
+    if (iconPath) {
+      tray = createTray({
+        iconPath,
+        onShow: () => {
+          if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
+          }
+        },
+        onQuit: () => {
+          stopActivityMonitor();
+          if (mainWindow) mainWindow.destroy();
+          app.quit();
+        },
+      });
+    }
 
-  // アクティビティモニター開始
-  startActivityMonitor();
+    // アクティビティモニター開始
+    startActivityMonitor();
+  }
 });
 
 // macOS: Dock クリックでウィンドウ再表示
@@ -108,7 +127,10 @@ app.on('activate', () => {
 
 // 全ウィンドウ閉じてもアプリ終了しない（トレイ常駐）
 app.on('window-all-closed', () => {
-  // トレイ常駐のため何もしない
+  if (isE2E) {
+    app.quit();
+  }
+  // 通常モード: トレイ常駐のため何もしない
 });
 
-module.exports = { store, cacheManager, activityMonitor };
+module.exports = { store, cacheManager, activityMonitor, getMainWindow: () => mainWindow };

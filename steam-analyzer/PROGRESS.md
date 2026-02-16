@@ -1,5 +1,5 @@
 # Current Phase
-完了 — 全モジュール実装・統合テスト・UX改善・全IPC連携完了
+完了 — 全モジュール実装・統合テスト・E2Eテスト・全IPC連携完了
 
 ## Current Task
 なし（全タスク完了）
@@ -34,12 +34,25 @@ completed
   - store-recommend: モード切替＋類似ゲーム検索＋セール予測＋ウォッチリスト追加
 - renderer コンポーネントテスト追加（14テスト）
 - IPC ハンドラーテスト拡充（36テスト）
-- **全20スイート、183テスト合格**
+- E2Eテスト追加（Playwright + Electron — 24テスト）:
+  - ウィンドウ表示・サイズ
+  - 5タブナビゲーション切り替え
+  - Store/Recommend モード切替
+  - Settings フォーム・データ管理ボタン
+  - IPC全チャネル通信（Library/Settings/Watchlist/Statistics/Backlog/Activity/Cache/Export）
+  - Watchlist CRUD ラウンドトリップ
+  - CSP検証
+  - contextIsolation / nodeIntegration セキュリティ
+- CSP対応: インラインスクリプト→外部ファイル化（nav.js）
+- main.js E2Eモード対応（--e2e フラグ、トレイスキップ、window-all-closed で終了）
+- アセットアイコン（icon.png/ico/icns）ダミー配置
+- **Jest: 20スイート、183テスト合格**
+- **Playwright: 24 E2Eテスト合格**
 
 ## What to do next
-- assets/ にアプリアイコン（icon.png, icon.ico, icon.icns）を配置
-- `npm run pack` でパッケージングテスト
-- 実環境でのE2Eテスト（Spectron/Playwright等）
+- アイコンを本番用デザインに差し替え
+- `npm run pack` でパッケージングテスト（electron-builder）
+- CI/CDパイプラインでE2Eテストを自動実行
 
 ## Unresolved issues
 なし
@@ -63,10 +76,12 @@ completed
 - [x] src/main/ipc-handlers.js（IPC制御 — 全16ハンドラー）
 - [x] src/main/notifier.js（トースト通知）
 - [x] src/main/tray.js（システムトレイ）
-- [x] src/main/main.js（Electronエントリポイント）
+- [x] src/main/main.js（Electronエントリポイント + E2Eモード対応）
 - [x] src/main/preload.js（contextBridge — 全16 API）
 - [x] src/renderer/index.html（エントリポイント）
+- [x] src/renderer/nav.js（タブ切り替え — CSP準拠外部スクリプト）
 - [x] src/renderer/tabs/（5タブ — 全IPC連携・UX改善済み）
 - [x] src/renderer/components/（price-bar, game-card — テスト済み）
 - [x] tests/integration/（4統合テストスイート）
 - [x] tests/renderer/（コンポーネントテスト）
+- [x] tests/e2e/（Playwright E2Eテスト — 24テスト）
