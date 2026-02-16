@@ -22,15 +22,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Windows installer
-        run: npm run dist -- --win --x64
+      - name: Build Windows exe
+        run: npx electron-builder --win --x64 --dir
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Zip unpacked binary
+        run: Compress-Archive -Path dist/win-unpacked/* -DestinationPath dist/SteamAnalyzer-win-x64.zip
+        shell: pwsh
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            steam-analyzer/dist/Steam Analyzer Setup *.exe
+          files: steam-analyzer/dist/SteamAnalyzer-win-x64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
