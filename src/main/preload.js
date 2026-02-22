@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('api', {
   getActivitySummary: () => ipcRenderer.invoke('get-activity-summary'),
   searchSimilar: (sourceGameId, candidates) => ipcRenderer.invoke('search-similar', sourceGameId, candidates),
   getSalePrediction: (game, history) => ipcRenderer.invoke('get-sale-prediction', game, history),
+  importWishlist: () => ipcRenderer.invoke('import-wishlist'),
   clearCache: () => ipcRenderer.invoke('clear-cache'),
   exportData: (format) => ipcRenderer.invoke('export-data', format),
 });

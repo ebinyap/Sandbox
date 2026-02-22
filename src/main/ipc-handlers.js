@@ -84,10 +84,19 @@ function registerHandlers(deps) {
   }));
 
   ipcMain.handle('refresh-library', createHandler(async () => {
-    if (!deps.fetcher) {
+    let result;
+    if (deps.fetcher) {
+      result = await deps.fetcher();
+    } else if (deps.steamApi && deps.steamApi.fetchOwnedGames) {
+      const apiKey = deps.store.getSetting('steamApiKey', '');
+      const steamId = deps.store.getSetting('steamId', '');
+      if (!apiKey || !steamId) {
+        throw new Error('Steam API Key と Steam ID を設定してください');
+      }
+      result = await deps.steamApi.fetchOwnedGames(steamId, apiKey);
+    } else {
       return { games: [], errors: [] };
     }
-    const result = await deps.fetcher();
     const existingGames = deps.store.getLibrary();
     const merged = mergeGames([...existingGames, ...result.games]);
     deps.store.setLibrary(merged);
@@ -140,6 +149,28 @@ function registerHandlers(deps) {
     const prediction = predictSale(game.id, history);
     const advice = advise(game, prediction);
     return { prediction, advice };
+  }));
+
+  ipcMain.handle('import-wishlist', createHandler(async () => {
+    const steamId = deps.store.getSetting('steamId', '');
+    if (!steamId) {
+      throw new Error('Steam ID を設定してください');
+    }
+    if (!deps.steamApi || !deps.steamApi.fetchWishlist) {
+      throw new Error('Steam API が利用できません');
+    }
+    const result = await deps.steamApi.fetchWishlist(steamId);
+    const watchlist = deps.store.getWatchlist();
+    let imported = 0;
+    for (const item of result.items) {
+      const exists = watchlist.some((e) => e.gameId === item.gameId);
+      if (!exists) {
+        watchlist.push(item);
+        imported++;
+      }
+    }
+    deps.store.setWatchlist(watchlist);
+    return { imported, total: result.items.length, errors: result.errors };
   }));
 
   ipcMain.handle('clear-cache', createHandler(async () => {

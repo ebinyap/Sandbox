@@ -4,6 +4,7 @@ const { createGame } = require('../../src/engine/models');
 const {
   fetchOwnedGames,
   fetchAppDetails,
+  fetchWishlist,
   filterGamesOnly,
 } = require('../../src/api/steam');
 
@@ -130,6 +131,62 @@ describe('steam.js', () => {
       expect(result.game).toBeNull();
       expect(result.error).not.toBeNull();
       expect(result.error.type).toBe('network');
+    });
+  });
+
+  // --- fetchWishlist ---
+  describe('fetchWishlist', () => {
+    test('正常レスポンスからウィッシュリスト項目を返す', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          '1245620': { name: 'Elden Ring', priority: 0, added: 1600000000 },
+          '367520': { name: 'Hollow Knight', priority: 1, added: 1550000000 },
+        }),
+      });
+
+      const result = await fetchWishlist('STEAM_ID');
+      expect(result.items).toHaveLength(2);
+      expect(result.errors).toHaveLength(0);
+      const sorted = [...result.items].sort((a, b) => a.gameId.localeCompare(b.gameId));
+      expect(sorted[0].gameId).toBe('1245620');
+      expect(sorted[0].title).toBe('Elden Ring');
+      expect(sorted[1].gameId).toBe('367520');
+      expect(sorted[1].title).toBe('Hollow Knight');
+    });
+
+    test('HTTP エラーは AppError を返す', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      const result = await fetchWishlist('STEAM_ID');
+      expect(result.items).toHaveLength(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].source).toBe('steam');
+      expect(result.errors[0].context).toBe('fetchWishlist');
+    });
+
+    test('ネットワークエラーは AppError を返す', async () => {
+      global.fetch.mockRejectedValueOnce(new Error('fetch failed'));
+
+      const result = await fetchWishlist('STEAM_ID');
+      expect(result.items).toHaveLength(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].type).toBe('network');
+    });
+
+    test('空のウィッシュリストは空配列を返す', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({}),
+      });
+
+      const result = await fetchWishlist('STEAM_ID');
+      expect(result.items).toHaveLength(0);
+      expect(result.errors).toHaveLength(0);
     });
   });
 

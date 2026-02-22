@@ -8,6 +8,7 @@ const CacheManager = require('./cache-manager');
 const ActivityMonitor = require('./activity-monitor');
 const { registerHandlers } = require('./ipc-handlers');
 const { createTray } = require('./tray');
+const { fetchOwnedGames, fetchWishlist } = require('../api/steam');
 
 const isE2E = process.argv.includes('--e2e');
 
@@ -86,7 +87,7 @@ function stopActivityMonitor() {
 
 app.whenReady().then(() => {
   // IPC ハンドラー登録
-  registerHandlers({ store, cacheManager, activityMonitor });
+  registerHandlers({ store, cacheManager, activityMonitor, steamApi: { fetchOwnedGames, fetchWishlist } });
 
   // ウィンドウ作成
   createWindow();

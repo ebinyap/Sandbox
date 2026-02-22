@@ -37,6 +37,7 @@
       <h3 style="margin-bottom:12px;color:#8f98a0;">Data Management</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button id="setting-refresh" style="padding:8px 16px;background:#2a475e;border:none;color:#c7d5e0;border-radius:4px;cursor:pointer;">Refresh Library</button>
+        <button id="setting-import-wishlist" style="padding:8px 16px;background:#2a475e;border:none;color:#c7d5e0;border-radius:4px;cursor:pointer;">Import Wishlist</button>
         <button id="setting-export" style="padding:8px 16px;background:#2a475e;border:none;color:#c7d5e0;border-radius:4px;cursor:pointer;">Export Data</button>
         <button id="setting-clear-cache" style="padding:8px 16px;background:#4a1c1c;border:none;color:#e0a0a0;border-radius:4px;cursor:pointer;">Clear Cache</button>
       </div>
@@ -45,6 +46,7 @@
 
     panel.querySelector('#setting-save')?.addEventListener('click', save);
     panel.querySelector('#setting-refresh')?.addEventListener('click', refreshLibrary);
+    panel.querySelector('#setting-import-wishlist')?.addEventListener('click', importWishlist);
     panel.querySelector('#setting-export')?.addEventListener('click', exportData);
     panel.querySelector('#setting-clear-cache')?.addEventListener('click', clearCache);
   }
@@ -72,6 +74,24 @@
       }
     } catch (err) {
       showDataStatus('Refresh failed: ' + err.message, true);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function importWishlist() {
+    const btn = panel.querySelector('#setting-import-wishlist');
+    if (btn) btn.disabled = true;
+    showDataStatus('Importing wishlist...', false);
+    try {
+      const result = await window.api?.importWishlist();
+      if (result?.success) {
+        showDataStatus(`Imported ${result.data.imported} of ${result.data.total} wishlist items`, false);
+      } else {
+        showDataStatus(result?.error || 'Import failed', true);
+      }
+    } catch (err) {
+      showDataStatus('Import failed: ' + err.message, true);
     } finally {
       if (btn) btn.disabled = false;
     }
