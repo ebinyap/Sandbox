@@ -159,4 +159,54 @@ async function fetchAppDetails(appId) {
   }
 }
 
-module.exports = { fetchOwnedGames, fetchAppDetails, filterGamesOnly };
+/**
+ * Steam ウィッシュリストを取得する
+ * @param {string} steamId
+ * @returns {Promise<{ items: Array<{gameId: string, title: string}>, errors: AppError[] }>}
+ */
+async function fetchWishlist(steamId) {
+  try {
+    const url = `${STORE_API_BASE}/../wishlist/profiles/${steamId}/wishlistdata/?p=0`;
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      const errType = classifyHttpError(res.status);
+      return {
+        items: [],
+        errors: [
+          createAppError({
+            source: 'steam',
+            type: errType,
+            message: `Steam Wishlist API error: ${res.status} ${res.statusText}`,
+            retryable: errType === 'server' || errType === 'rate_limit',
+            httpStatus: res.status,
+            context: 'fetchWishlist',
+          }),
+        ],
+      };
+    }
+
+    const data = await res.json();
+    const items = Object.entries(data).map(([appId, info]) => ({
+      gameId: String(appId),
+      title: info.name || '',
+    }));
+
+    return { items, errors: [] };
+  } catch (err) {
+    return {
+      items: [],
+      errors: [
+        createAppError({
+          source: 'steam',
+          type: 'network',
+          message: err.message,
+          retryable: true,
+          context: 'fetchWishlist',
+        }),
+      ],
+    };
+  }
+}
+
+module.exports = { fetchOwnedGames, fetchAppDetails, fetchWishlist, filterGamesOnly };

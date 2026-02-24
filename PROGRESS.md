@@ -8,6 +8,19 @@
 completed
 
 ## What was just done
+- **バグ修正: refresh-library が Steam API を呼ばない問題を修正**
+  - 原因: main.js が registerHandlers に steamApi (fetchOwnedGames) を渡していなかった
+  - 修正: ipc-handlers.js の refresh-library ハンドラーが deps.steamApi を使ってストア設定（API Key, Steam ID）を読み、fetchOwnedGames を呼ぶように変更
+  - main.js に steamApi: { fetchOwnedGames, fetchWishlist } を接続
+- **新機能: Steam ウィッシュリスト → ウォッチリスト インポート**
+  - steam.js に fetchWishlist(steamId) を追加
+  - ipc-handlers.js に import-wishlist ハンドラーを追加（重複チェック付き）
+  - preload.js に importWishlist API を追加
+  - settings.js に「Import Wishlist」ボタンを追加
+- テスト追加: 10テスト（steam.test.js: 4, ipc-handlers.test.js: 6）
+- **Jest: 40スイート、376テスト合格**
+
+### Previous
 - Phase 1-7 完了（基盤、API、キャッシュ、分析エンジン、アクティビティ、Electron制御、renderer UI）
 - 統合テスト追加（4スイート、21テスト）:
   - tests/integration/recommendation-pipeline.test.js
@@ -62,7 +75,7 @@ completed
 - [x] src/engine/tag-manager.js（タグ集計、TF-IDF）
 - [x] src/engine/aggregator.js（マルチソースマージ）
 - [x] src/main/store.js（永続化）
-- [x] src/api/steam.js（所持ゲーム取得、詳細取得、タイプフィルタ）
+- [x] src/api/steam.js（所持ゲーム取得、詳細取得、ウィッシュリスト取得、タイプフィルタ）
 - [x] src/api/itad.js（現在価格、セール履歴）
 - [x] src/api/hltb.js（クリア時間）
 - [x] src/main/cache-manager.js（TTL管理、SWR）
@@ -73,11 +86,11 @@ completed
 - [x] src/engine/purchase-advisor.js（購入タイミング判定）
 - [x] src/engine/activity-analyzer.js（月別/四半期/年別集計）
 - [x] src/main/activity-monitor.js（プロセス監視）
-- [x] src/main/ipc-handlers.js（IPC制御 — 全16ハンドラー）
+- [x] src/main/ipc-handlers.js（IPC制御 — 全17ハンドラー、import-wishlist追加）
 - [x] src/main/notifier.js（トースト通知）
 - [x] src/main/tray.js（システムトレイ）
 - [x] src/main/main.js（Electronエントリポイント + E2Eモード対応）
-- [x] src/main/preload.js（contextBridge — 全16 API）
+- [x] src/main/preload.js（contextBridge — 全17 API、importWishlist追加）
 - [x] src/renderer/index.html（エントリポイント）
 - [x] src/renderer/nav.js（タブ切り替え — CSP準拠外部スクリプト）
 - [x] src/renderer/tabs/（5タブ — 全IPC連携・UX改善済み）

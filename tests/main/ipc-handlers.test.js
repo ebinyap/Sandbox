@@ -375,6 +375,85 @@ describe('ipc-handlers', () => {
     });
   });
 
+  describe('refresh-library with steamApi', () => {
+    test('steamApi を使って store の認証情報でライブラリを取得する', async () => {
+      const steamGames = [
+        createGame({ id: '1', title: 'Skyrim', sourceFlags: ['steam'] }),
+      ];
+      const fetchOwnedGames = jest.fn().mockResolvedValue({ games: steamGames, errors: [] });
+
+      store.setSetting('steamApiKey', 'test-key');
+      store.setSetting('steamId', 'test-id');
+
+      registerHandlers({ store, cacheManager: {}, steamApi: { fetchOwnedGames } });
+      const result = await handlers['refresh-library']({});
+
+      expect(result.success).toBe(true);
+      expect(fetchOwnedGames).toHaveBeenCalledWith('test-id', 'test-key');
+      expect(result.data.games.length).toBe(1);
+      expect(store.getLibrary()[0].title).toBe('Skyrim');
+    });
+
+    test('API キーまたは Steam ID が未設定の場合はエラーを返す', async () => {
+      const fetchOwnedGames = jest.fn();
+      registerHandlers({ store, cacheManager: {}, steamApi: { fetchOwnedGames } });
+
+      const result = await handlers['refresh-library']({});
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/Steam API Key|Steam ID/);
+      expect(fetchOwnedGames).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('import-wishlist handler', () => {
+    test('import-wishlist を登録する', () => {
+      registerHandlers({ store, cacheManager: {} });
+      const channels = ipcMain.handle.mock.calls.map((c) => c[0]);
+      expect(channels).toContain('import-wishlist');
+    });
+
+    test('Steam ウィッシュリストを取得してウォッチリストに追加する', async () => {
+      const wishlistGames = [
+        { gameId: '100', title: 'Elden Ring' },
+        { gameId: '200', title: 'Hollow Knight' },
+      ];
+      const fetchWishlist = jest.fn().mockResolvedValue({ items: wishlistGames, errors: [] });
+
+      store.setSetting('steamId', 'test-id');
+      registerHandlers({ store, cacheManager: {}, steamApi: { fetchWishlist } });
+
+      const result = await handlers['import-wishlist']({});
+      expect(result.success).toBe(true);
+      expect(fetchWishlist).toHaveBeenCalledWith('test-id');
+      expect(result.data.imported).toBe(2);
+      expect(store.getWatchlist().length).toBe(2);
+    });
+
+    test('既存のウォッチリストと重複するエントリはスキップする', async () => {
+      store.setWatchlist([{ gameId: '100', title: 'Elden Ring' }]);
+      const wishlistGames = [
+        { gameId: '100', title: 'Elden Ring' },
+        { gameId: '200', title: 'Hollow Knight' },
+      ];
+      const fetchWishlist = jest.fn().mockResolvedValue({ items: wishlistGames, errors: [] });
+
+      store.setSetting('steamId', 'test-id');
+      registerHandlers({ store, cacheManager: {}, steamApi: { fetchWishlist } });
+
+      const result = await handlers['import-wishlist']({});
+      expect(result.success).toBe(true);
+      expect(result.data.imported).toBe(1);
+      expect(store.getWatchlist().length).toBe(2);
+    });
+
+    test('Steam ID 未設定の場合はエラーを返す', async () => {
+      registerHandlers({ store, cacheManager: {}, steamApi: {} });
+      const result = await handlers['import-wishlist']({});
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/Steam ID/);
+    });
+  });
+
   describe('createHandler', () => {
     test('成功時はデータを返す', async () => {
       const fn = jest.fn().mockResolvedValue({ data: [1, 2, 3] });
