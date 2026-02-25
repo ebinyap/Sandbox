@@ -204,6 +204,31 @@ describe('ipc-handlers', () => {
       expect(result.success).toBe(true);
       expect(result.data.games).toEqual([]);
     });
+
+    test('API エラーがある場合、result.data.errors にエラーを返す', async () => {
+      const fetcher = jest.fn().mockResolvedValue({
+        games: [createGame({ id: '1', title: 'Skyrim', sourceFlags: ['steam'] })],
+        errors: [{ source: 'steam', type: 'rate_limit', message: 'Rate limited', retryable: true }],
+      });
+      registerHandlers({ store, cacheManager: {}, fetcher });
+      const result = await handlers['refresh-library']({});
+      expect(result.success).toBe(true);
+      expect(result.data.errors).toHaveLength(1);
+      expect(result.data.errors[0].type).toBe('rate_limit');
+      expect(result.data.games.length).toBe(1);
+    });
+
+    test('全ゲーム取得失敗時 (games=0, errors>0) は success=false を返す', async () => {
+      const fetcher = jest.fn().mockResolvedValue({
+        games: [],
+        errors: [{ source: 'steam', type: 'auth', message: 'Steam API error: 403 Forbidden', retryable: false }],
+      });
+      registerHandlers({ store, cacheManager: {}, fetcher });
+      const result = await handlers['refresh-library']({});
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain('403');
+    });
   });
 
   describe('add-watchlist-entry handler', () => {

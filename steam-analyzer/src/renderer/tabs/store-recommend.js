@@ -31,10 +31,72 @@
   function renderStoreMode() {
     const content = panel.querySelector('#store-content');
     if (!content) return;
-    content.innerHTML = `<div style="background:#2a475e;border-radius:4px;padding:16px;text-align:center;color:#8f98a0;">
-      <p>WebView: Steam Store</p>
-      <p style="font-size:12px;margin-top:8px;">store.steampowered.com</p>
-    </div>`;
+    content.innerHTML = `
+      <div id="wv-nav" style="display:flex;gap:8px;align-items:center;padding:8px 0;">
+        <button id="wv-back" style="padding:4px 8px;background:#2a475e;border:none;color:#c7d5e0;border-radius:4px;cursor:pointer;" title="Back">&#9664;</button>
+        <button id="wv-forward" style="padding:4px 8px;background:#2a475e;border:none;color:#c7d5e0;border-radius:4px;cursor:pointer;" title="Forward">&#9654;</button>
+        <button id="wv-home" style="padding:4px 8px;background:#2a475e;border:none;color:#c7d5e0;border-radius:4px;cursor:pointer;" title="Home">&#8962;</button>
+        <span id="wv-title" style="flex:1;color:#8f98a0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Steam Store</span>
+      </div>
+      <webview id="steam-webview" src="https://store.steampowered.com"
+        style="width:100%;height:calc(100vh - 120px);border:none;border-radius:4px;"
+        allowpopups></webview>
+      <div id="wv-price-bar"></div>
+    `;
+
+    const webview = content.querySelector('#steam-webview');
+    const titleEl = content.querySelector('#wv-title');
+
+    // ナビゲーションコントロール
+    content.querySelector('#wv-back')?.addEventListener('click', () => {
+      if (webview && typeof webview.canGoBack === 'function' && webview.canGoBack()) webview.goBack();
+    });
+    content.querySelector('#wv-forward')?.addEventListener('click', () => {
+      if (webview && typeof webview.canGoForward === 'function' && webview.canGoForward()) webview.goForward();
+    });
+    content.querySelector('#wv-home')?.addEventListener('click', () => {
+      if (webview && typeof webview.loadURL === 'function') webview.loadURL('https://store.steampowered.com');
+    });
+
+    // ページタイトル更新
+    if (webview && typeof webview.addEventListener === 'function') {
+      webview.addEventListener('page-title-updated', (e) => {
+        if (titleEl) titleEl.textContent = e.title || 'Steam Store';
+      });
+
+      // URL変更時の価格バー表示
+      webview.addEventListener('did-navigate', (e) => { handleUrlChange(e.url); });
+      webview.addEventListener('did-navigate-in-page', (e) => { handleUrlChange(e.url); });
+    }
+  }
+
+  function handleUrlChange(url) {
+    const priceBarEl = document.getElementById('wv-price-bar');
+    if (!priceBarEl) return;
+
+    const match = url.match(/store\.steampowered\.com\/app\/(\d+)/);
+    if (match) {
+      showPriceBar(match[1], priceBarEl);
+    } else {
+      priceBarEl.innerHTML = '';
+    }
+  }
+
+  async function showPriceBar(appId, container) {
+    try {
+      const libResult = await window.api?.getLibrary();
+      if (libResult?.success) {
+        const game = libResult.data.find((g) => g.id === appId);
+        if (game && window.PriceBar) {
+          container.innerHTML = window.PriceBar.render({
+            currentPrice: game.currentPrice,
+            historicalLow: game.historicalLow,
+          });
+          return;
+        }
+      }
+    } catch (_) { /* non-fatal */ }
+    container.innerHTML = '';
   }
 
   function renderGameCard(game, score, extras) {

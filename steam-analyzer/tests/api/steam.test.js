@@ -133,6 +133,50 @@ describe('steam.js', () => {
     });
   });
 
+  // --- fetchOwnedGames with injected fetch ---
+  describe('fetchOwnedGames with injected fetch', () => {
+    test('注入された fetch 関数を使用する', async () => {
+      const customFetch = jest.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ response: { games: [{ appid: 1, name: 'Test', playtime_forever: 10 }] } }),
+      });
+      const result = await fetchOwnedGames('SID', 'KEY', { fetch: customFetch });
+      expect(customFetch).toHaveBeenCalled();
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(result.games).toHaveLength(1);
+      expect(result.games[0].id).toBe('1');
+    });
+
+    test('fetch が未指定の場合はグローバル fetch にフォールバックする', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ response: { games: [] } }),
+      });
+      const result = await fetchOwnedGames('SID', 'KEY');
+      expect(global.fetch).toHaveBeenCalled();
+      expect(result.games).toHaveLength(0);
+    });
+  });
+
+  // --- fetchAppDetails with injected fetch ---
+  describe('fetchAppDetails with injected fetch', () => {
+    test('注入された fetch 関数を使用する', async () => {
+      const customFetch = jest.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          '440': {
+            success: true,
+            data: { steam_appid: 440, name: 'TF2', genres: [], release_date: { coming_soon: false, date: '2007' } },
+          },
+        }),
+      });
+      const result = await fetchAppDetails('440', { fetch: customFetch });
+      expect(customFetch).toHaveBeenCalled();
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(result.game).not.toBeNull();
+    });
+  });
+
   // --- filterGamesOnly ---
   describe('filterGamesOnly', () => {
     test('type: "game" のみを通過させる', () => {

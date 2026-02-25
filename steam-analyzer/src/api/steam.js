@@ -28,10 +28,11 @@ function filterGamesOnly(items) {
  * @param {string} apiKey
  * @returns {Promise<{ games: Game[], errors: AppError[] }>}
  */
-async function fetchOwnedGames(steamId, apiKey) {
+async function fetchOwnedGames(steamId, apiKey, options = {}) {
+  const _fetch = options.fetch || fetch;
   try {
     const url = `${STEAM_API_BASE}/IPlayerService/GetOwnedGames/v1/?key=${apiKey}&steamid=${steamId}&include_appinfo=1&include_played_free_games=1&format=json`;
-    const res = await fetch(url);
+    const res = await _fetch(url);
 
     if (!res.ok) {
       const errType = classifyHttpError(res.status);
@@ -87,10 +88,11 @@ async function fetchOwnedGames(steamId, apiKey) {
  * @param {string} appId
  * @returns {Promise<{ game: Game|null, error: AppError|null }>}
  */
-async function fetchAppDetails(appId) {
+async function fetchAppDetails(appId, options = {}) {
+  const _fetch = options.fetch || fetch;
   try {
     const url = `${STORE_API_BASE}/appdetails?appids=${appId}`;
-    const res = await fetch(url);
+    const res = await _fetch(url);
 
     if (!res.ok) {
       const errType = classifyHttpError(res.status);
