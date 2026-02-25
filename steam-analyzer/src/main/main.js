@@ -2,12 +2,13 @@
 
 const path = require('path');
 const fs = require('fs');
-const { app, BrowserWindow, shell, nativeImage } = require('electron');
+const { app, BrowserWindow, shell, nativeImage, net } = require('electron');
 const Store = require('./store');
 const CacheManager = require('./cache-manager');
 const ActivityMonitor = require('./activity-monitor');
 const { registerHandlers } = require('./ipc-handlers');
 const { createTray } = require('./tray');
+const { fetchOwnedGames } = require('../api/steam');
 
 const isE2E = process.argv.includes('--e2e');
 
@@ -33,6 +34,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      webviewTag: true,
       preload: path.join(__dirname, 'preload.js'),
     },
   });
@@ -85,8 +87,19 @@ function stopActivityMonitor() {
 }
 
 app.whenReady().then(() => {
+  // Steam API fetcher (net.fetch を使用して Electron メインプロセスでの互換性を確保)
+  const electronFetch = net.fetch.bind(net);
+  const fetcher = async () => {
+    const apiKey = store.getSetting('steamApiKey', '');
+    const steamId = store.getSetting('steamId', '');
+    if (!apiKey || !steamId) {
+      return { games: [], errors: [{ source: 'steam', type: 'validation', message: 'Steam API Key and Steam ID are required', retryable: false }] };
+    }
+    return fetchOwnedGames(steamId, apiKey, { fetch: electronFetch });
+  };
+
   // IPC ハンドラー登録
-  registerHandlers({ store, cacheManager, activityMonitor });
+  registerHandlers({ store, cacheManager, activityMonitor, fetcher });
 
   // ウィンドウ作成
   createWindow();
