@@ -88,6 +88,11 @@ function registerHandlers(deps) {
       return { games: [], errors: [] };
     }
     const result = await deps.fetcher();
+    // API がゲームを1つも返さずエラーのみの場合は失敗扱い
+    if (result.games.length === 0 && result.errors.length > 0) {
+      const errMsg = result.errors.map((e) => e.message).join('; ');
+      throw new Error(errMsg);
+    }
     const existingGames = deps.store.getLibrary();
     const merged = mergeGames([...existingGames, ...result.games]);
     deps.store.setLibrary(merged);

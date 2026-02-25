@@ -49,13 +49,23 @@
     panel.querySelector('#setting-clear-cache')?.addEventListener('click', clearCache);
   }
 
-  function showDataStatus(msg, isError) {
+  function showDataStatus(msg, isError, persistent) {
     const el = panel.querySelector('#data-status');
     if (!el) return;
     el.textContent = msg;
     el.style.color = isError ? '#e0a0a0' : '#a4d007';
     el.style.display = 'block';
-    setTimeout(() => { el.style.display = 'none'; }, 3000);
+    if (!persistent) {
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+  }
+
+  function formatErrorMessage(msg) {
+    if (!msg) return 'Unknown error';
+    if (msg.includes('401') || msg.includes('403')) return 'Invalid API Key. Check your Steam API Key in settings.';
+    if (msg.includes('429')) return 'Rate limited. Please wait a moment and try again.';
+    if (msg.includes('fetch failed') || msg.includes('network')) return 'Network error. Check your internet connection.';
+    return msg;
   }
 
   async function refreshLibrary() {
@@ -66,12 +76,18 @@
       const result = await window.api?.refreshLibrary();
       if (result?.success) {
         const count = result.data?.games?.length || 0;
-        showDataStatus(`Library refreshed: ${count} games`, false);
+        const errors = result.data?.errors || [];
+        if (errors.length > 0) {
+          const errorSummary = errors.map((e) => formatErrorMessage(e.message || e.type)).join(', ');
+          showDataStatus(`Library refreshed: ${count} games (warnings: ${errorSummary})`, true, true);
+        } else {
+          showDataStatus(`Library refreshed: ${count} games`, false);
+        }
       } else {
-        showDataStatus(result?.error || 'Refresh failed', true);
+        showDataStatus(formatErrorMessage(result?.error) || 'Refresh failed', true, true);
       }
     } catch (err) {
-      showDataStatus('Refresh failed: ' + err.message, true);
+      showDataStatus('Refresh failed: ' + err.message, true, true);
     } finally {
       if (btn) btn.disabled = false;
     }
